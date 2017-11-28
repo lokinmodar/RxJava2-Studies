@@ -7,8 +7,11 @@ import java.util.List;
 
 public class HelloWorld {
     public static void main(String[] args) {
-        Flowable.just("Hello world").subscribe(System.out::println);
+        Flowable.just("Hello world")
+                .subscribe(System.out::println);
 
+        Observable.just("Bom dia!")
+                .subscribe(System.out::println);
 
         List<String> names = new ArrayList<>();
         names.add("Dante");
@@ -20,7 +23,9 @@ public class HelloWorld {
 
         stringObservable.subscribe(System.out::println);
 
+        Observable.fromIterable(names).subscribe(System.out::println); //Another simpler way to do it
     }
+
 
 
 
