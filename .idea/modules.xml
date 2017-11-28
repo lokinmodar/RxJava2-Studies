@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/dss.iml" filepath="$PROJECT_DIR$/.idea/modules/dss.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/dss_main.iml" filepath="$PROJECT_DIR$/.idea/modules/dss_main.iml" group="dss" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/dss_test.iml" filepath="$PROJECT_DIR$/.idea/modules/dss_test.iml" group="dss" />
+    </modules>
+  </component>
+</project>
