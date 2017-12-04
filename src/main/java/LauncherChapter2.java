@@ -3,10 +3,11 @@ import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
+import io.reactivex.observables.ConnectableObservable;
 
 import java.util.Arrays;
 import java.util.List;
-
+import java.util.concurrent.TimeUnit;
 
 
 /* Working with the codes from the book Learning RxJava by Thomas Nield
@@ -134,13 +135,102 @@ public class LauncherChapter2 {
                 .subscribe(onNext, onError, onComplete);
 
         //another way: putting the lambdas inside the subscribe()
+        //much less boilerplate code
         newReSource.map(String::length).filter(i -> i >= 5)
                 .subscribe(i -> System.out.println("Rec: " + i),
                         Throwable::printStackTrace,
                         () -> System.out.println("Done!"));
 
-    }
+        //you can omit methods in subscribe()
+        //here i omit onComplete()
 
+        newReSource.map(String::length).filter(i -> i >= 5)
+                .subscribe(i -> System.out.println("Recb: " + i),
+                        Throwable::printStackTrace);
+        //and here i omit both onError and onComplete:
+        //omitting onError should be avoided!
+        newReSource.map(String::length).filter(i -> i >= 5)
+                .subscribe(i -> System.out.println("Rece: " + i));
+
+        //Multiple observers! (i already used this approach above
+        //cold observables allow more than one observer to subscribe
+        // in general, cold observables are the ones with sources that emit finite datasets
+        //the Observable will emit all items to the first Observer than will emit all items to the next and so on
+
+        newReSource.subscribe(s -> System.out.println("Observer 1 received: " + s));
+        newReSource.subscribe(s -> System.out.println("Observer 2 received: " + s));
+
+        //if one observer uses transformation operators, it does not affect the second one
+        //first observer
+        newReSource.subscribe(s -> System.out.println("Observer 1 Received: " + s));
+        //second observer
+        newReSource.map(String::length).filter(i -> i >= 5)
+                        .subscribe(s -> System.out.println("Observer 2 Received: " +
+                                s));
+
+        //ConnectableObservable: makes all emissions to be played all at once to all the Observers
+        //works with cold observables as well
+        //The concept here is called Multicasting!
+
+        ConnectableObservable<String> conSource =
+                Observable.just("Alpha", "Beta", "Gamma",
+                        "Delta", "Epsilon").publish();//property needed!!!
+        //Setting up obeservers
+        conSource.subscribe(s -> System.out.println("Observer 01 received: " + s));
+        conSource.map(String::length)
+                .subscribe(s -> System.out.println("Observer 02 Received: " +
+                        s));
+        //Firing the ConnectableObservable
+        conSource.connect();
+
+        //Observable.range() emits a consecutive range of integers
+        Observable.range(1,30)//(starting value, how many emissions)
+                .subscribe(System.out::println);
+        //There is also a  rangeLong() operator that workis in a similar way
+
+        //Observable.interval emits according to a set interval
+
+        Observable.interval(1, TimeUnit.SECONDS)
+                .subscribe(s -> System.out.println(s + " Mississippi"));
+                sleep(6000);
+        //this runs on the computation Scheduler thread.
+        //we need to delay the end of the execution to see the results in main thread
+        //it is a cold observable as we can see by adding a second observer to it
+        Observable<Long> seconds = Observable.interval(1, TimeUnit.SECONDS);
+        seconds.subscribe(s -> System.out.println("Observer 1: " + s));
+        sleep(6000);
+        seconds.subscribe(s -> System.out.println("Observer 2: " + s));
+        sleep(6000);
+
+        //we can use ConnectableObservable to put them working over the same emissions:
+
+        ConnectableObservable<Long> seSeconds =
+                Observable.interval(1,TimeUnit.SECONDS).publish();
+        //1st observer
+        seSeconds.subscribe(a -> System.out.println("Observer 1: " + a));
+        seSeconds.connect();
+
+        //sleep 6 seconds
+        sleep(6000);
+
+        //2nd observer
+        seSeconds.subscribe(b -> System.out.println("Observer 2: " + b));
+
+        //sleep 6 seconds
+        sleep(6000);
+
+
+        //next: Observable.future() page 47
+
+    }
+    public static void sleep(long millis){
+        try {
+            Thread.sleep(millis);
+        }catch (InterruptedException e){
+            e.printStackTrace();
+        }
+
+    }
 
 
 
