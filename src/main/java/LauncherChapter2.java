@@ -7,7 +7,7 @@ import io.reactivex.observables.ConnectableObservable;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /* Working with the codes from the book Learning RxJava by Thomas Nield
@@ -219,10 +219,18 @@ public class LauncherChapter2 {
         //sleep 6 seconds
         sleep(6000);
 
+        //Observable.empty() are the RxJava concept of null.
+        //it just goes to onComplete()
 
-        //next: Observable.future() page 47
+        Observable<String> empty = Observable.empty();
+        empty.subscribe(System.out::println, Throwable::printStackTrace,
+                () -> System.out.println("Done!"));
+
 
     }
+
+
+
     public static void sleep(long millis){
         try {
             Thread.sleep(millis);
