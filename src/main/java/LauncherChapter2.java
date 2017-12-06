@@ -226,6 +226,24 @@ public class LauncherChapter2 {
         empty.subscribe(System.out::println, Throwable::printStackTrace,
                 () -> System.out.println("Done!"));
 
+        //Observable.never() never calls onComplete() so it is always left open for observers
+        //but never gives any emission
+        //mostly used for testing
+
+        Observable<String> never = Observable.never();
+        never.subscribe(System.out::println,
+                Throwable::printStackTrace,
+                () -> System.out.println("Done!"));
+        sleep(6000);
+
+        //Observable.error() is mostly used for testing as it immediately calls onError()
+
+        Observable.error(new Exception("Crashed!"))//providing exception through lambda creates separate exception instances
+                // Observable.error(() -> new Exception("Crashed!"))
+                .subscribe(i -> System.out.println("Received: "+ i),
+                        Throwable::printStackTrace,
+                        () -> System.out.println("Done!"));
+
 
     }
 
