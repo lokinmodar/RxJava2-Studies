@@ -14,6 +14,10 @@ import java.util.concurrent.*;
     Adding my comments where i see fit for learning purposes
  */
 public class LauncherChapter2 {
+
+    static int start = 1;
+    static int count = 5;
+
     public static void main(String[] args) {
 
         //using .create, we can pass the attributes to onNext() and finish with onComplete();
@@ -238,12 +242,27 @@ public class LauncherChapter2 {
 
         //Observable.error() is mostly used for testing as it immediately calls onError()
 
-        Observable.error(new Exception("Crashed!"))//providing exception through lambda creates separate exception instances
+/*        Observable.error(new Exception("Crashed!"))//providing exception through lambda creates separate exception instances
                 // Observable.error(() -> new Exception("Crashed!"))
                 .subscribe(i -> System.out.println("Received: "+ i),
                         Throwable::printStackTrace,
-                        () -> System.out.println("Done!"));
+                        () -> System.out.println("Done!"));*/
 
+        //Observable.defer() used as a factory, it is capalble to create a separate state for each Observer
+        //often used when the Observable source is not capturing changes to the things driving it
+
+
+        Observable<Integer> source2 =
+                Observable.defer(() -> Observable.range(start, count));
+        source2.subscribe(i -> System.out.println("Observer - 1: " + i));
+
+        //modify count
+        count = 10;
+
+        source2.subscribe(i -> System.out.println("Observer - 2: " + i));
+
+        //Observable.fromCallable() helps emmiting errors and other info up in the Observable chain
+        
 
     }
 
