@@ -15,8 +15,8 @@ import java.util.concurrent.*;
  */
 public class LauncherChapter2 {
 
-    static int start = 1;
-    static int count = 5;
+    private static int start = 1;
+    private static int count = 5;
 
     public static void main(String[] args) {
 
@@ -262,13 +262,13 @@ public class LauncherChapter2 {
         source2.subscribe(i -> System.out.println("Observer - 2: " + i));
 
         //Observable.fromCallable() helps emmiting errors and other info up in the Observable chain
-        
+
 
     }
 
 
 
-    public static void sleep(long millis){
+    private static void sleep(long millis){
         try {
             Thread.sleep(millis);
         }catch (InterruptedException e){
