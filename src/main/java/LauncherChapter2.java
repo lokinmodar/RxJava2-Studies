@@ -1,8 +1,10 @@
 import io.reactivex.*;
+import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
 import io.reactivex.observables.ConnectableObservable;
+import io.reactivex.observers.ResourceObserver;
 
 import java.util.Arrays;
 import java.util.List;
@@ -13,7 +15,8 @@ import java.util.concurrent.*;
     Adding my comments where i see fit for learning purposes
  */
 public class LauncherChapter2 {
-
+    private static final CompositeDisposable disposables
+            = new CompositeDisposable();
     private static int start = 1;
     private static int count = 5;
 
@@ -21,7 +24,7 @@ public class LauncherChapter2 {
 
         //using .create, we can pass the attributes to onNext() and finish with onComplete();
         //useful when pulling non-reactive items into the Observable
-        Observable<String> source = Observable.create(emitter ->{
+        Observable<String> source = Observable.create(emitter -> {
             emitter.onNext("Alpha");
             emitter.onNext("Beta");
             emitter.onNext("Gamma");
@@ -33,7 +36,7 @@ public class LauncherChapter2 {
 
         //implementing error handling:
 
-        Observable<String> newSource = Observable.create(emitter ->{
+        Observable<String> newSource = Observable.create(emitter -> {
             try {
                 emitter.onNext("Alpha");
                 emitter.onNext("Beta");
@@ -58,7 +61,7 @@ public class LauncherChapter2 {
         //we can avoid using two different variables to handle mapping and filtering
         //map and filter yield new Observables so it is possible to use one variable
 
-        Observable<String> nextSource = Observable.create(emitter ->{
+        Observable<String> nextSource = Observable.create(emitter -> {
             try {
                 emitter.onNext("Alpha");
                 emitter.onNext("Beta");
@@ -81,11 +84,11 @@ public class LauncherChapter2 {
         Observable<String> reSource = Observable.just("Alpha", "Beta", "Gamma",
                 "Delta", "Epsilon");
 
-            reSource.map(String::length)
+        reSource.map(String::length)
                 .filter(i -> i >= 5)
                 .subscribe(s -> System.out.println("RECEIVED " + s));
 
-         //Observable.fromIterable() allows us to use values in any object that implements Iterable
+        //Observable.fromIterable() allows us to use values in any object that implements Iterable
 
         List<String> items = Arrays.asList("Alpha", "Beta", "Gamma",
                 "Delta", "Epsilon");
@@ -125,7 +128,7 @@ public class LauncherChapter2 {
             }
         };
 
-        newReSource.map(String::length).filter(i -> i >=5)
+        newReSource.map(String::length).filter(i -> i >= 5)
                 .subscribe(myObserver);
 
         //Implementing methods as lambdas!
@@ -168,8 +171,8 @@ public class LauncherChapter2 {
         newReSource.subscribe(s -> System.out.println("Observer 1 Received: " + s));
         //second observer
         newReSource.map(String::length).filter(i -> i >= 5)
-                        .subscribe(s -> System.out.println("Observer 2 Received: " +
-                                s));
+                .subscribe(s -> System.out.println("Observer 2 Received: " +
+                        s));
 
         //ConnectableObservable: makes all emissions to be played all at once to all the Observers
         //works with cold observables as well
@@ -187,7 +190,7 @@ public class LauncherChapter2 {
         conSource.connect();
 
         //Observable.range() emits a consecutive range of integers
-        Observable.range(1,30)//(starting value, how many emissions)
+        Observable.range(1, 30)//(starting value, how many emissions)
                 .subscribe(System.out::println);
         //There is also a  rangeLong() operator that workis in a similar way
 
@@ -195,7 +198,7 @@ public class LauncherChapter2 {
 
         Observable.interval(1, TimeUnit.SECONDS)
                 .subscribe(s -> System.out.println(s + " Mississippi"));
-                sleep(6000);
+        sleep(6000);
         //this runs on the computation Scheduler thread.
         //we need to delay the end of the execution to see the results in main thread
         //it is a cold observable as we can see by adding a second observer to it
@@ -208,7 +211,7 @@ public class LauncherChapter2 {
         //we can use ConnectableObservable to put them working over the same emissions:
 
         ConnectableObservable<Long> seSeconds =
-                Observable.interval(1,TimeUnit.SECONDS).publish();
+                Observable.interval(1, TimeUnit.SECONDS).publish();
         //1st observer
         seSeconds.subscribe(a -> System.out.println("Observer 1: " + a));
         seSeconds.connect();
@@ -285,18 +288,18 @@ public class LauncherChapter2 {
         // has emission
         Maybe<Integer> presentSource = Maybe.just(100);
         presentSource.subscribe(s -> System.out.println("Process 1 received: " + s),
-        Throwable::printStackTrace,
+                Throwable::printStackTrace,
                 () -> System.out.println("Process 1 done!"));
         //no emission
         Maybe<Integer> emptySource = Maybe.empty();
         emptySource.subscribe(s -> System.out.println("Process 2 received: " + s),
-        Throwable::printStackTrace,
+                Throwable::printStackTrace,
                 () -> System.out.println("Process 2 done!"));
 
         //Observable.firstElement() yelds a Maybe too
 
         Observable<String> string =
-                Observable.just("Alpha","Beta","Gamma","Delta","Epsilon");
+                Observable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon");
         string.firstElement().subscribe(
                 s -> System.out.println("RECEIVED " + s),
                 Throwable::printStackTrace,
@@ -309,7 +312,6 @@ public class LauncherChapter2 {
 
         Completable.fromRunnable(LauncherChapter2::runProcess)
                 .subscribe(() -> System.out.println("Done!"));
-
 
 
         //------ Disposing ------
@@ -329,8 +331,107 @@ public class LauncherChapter2 {
         disposable.dispose();
         //sleep 5 seconds to prove there are no more emissions
         sleep(5000);
-        
 
+        //Handling a Disposable within an Observer
+        Observer<Integer> meuObserver = new Observer<Integer>() {
+            private Disposable disposable;
+
+            @Override
+            public void onSubscribe(Disposable d) {
+                this.disposable = disposable; //gives all other methods access to disposable
+                //
+            }
+
+            @Override
+            public void onNext(Integer integer) {
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+        };
+
+        /*Note that passing an Observer to the subscribe() method will be void and not return a
+        Disposable since it is assumed that the Observer will handle it. If you do not want to
+        explicitly handle the Disposable and want RxJava to handle it for you (which is probably
+        a good idea until you have reason to take control), you can extend ResourceObserver as
+        your Observer, which uses a default Disposable handling. Pass this to subscribeWith()
+        instead of subscribe(), and you will get the default Disposable returned:*/
+
+        Observable<Long> obsource =
+                Observable.interval(1, TimeUnit.SECONDS);
+        ResourceObserver<Long> myObserver2 = new ResourceObserver<Long>() {
+            @Override
+            public void onNext(Long value) {
+                System.out.println(value);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+
+
+        };
+
+        //Capturing the Disposable
+        Disposable disposable1 = obsource.subscribeWith(myObserver2);
+
+        //CompositeSisposable - used when we have several susbcriptions and need to manage and dispose of them
+        //Implements Disposable but hods a collection of disposables internally
+        //we can add to it and dispose of them all at once (using add() or addAll())
+
+        Observable<Long> reseconds =
+                Observable.interval(1, TimeUnit.SECONDS);
+        //subscribe and capture disposables
+        Disposable disposable2 =
+                seconds.subscribe(l -> System.out.println("Observer 1: " +
+                        l));
+        Disposable disposable3 =
+                seconds.subscribe(l -> System.out.println("Observer 2: " +
+                        l));
+        //put both disposables into CompositeDisposable
+        disposables.addAll(disposable1, disposable2);
+        //sleep 5 seconds
+        sleep(5000);
+        //dispose all disposables
+        disposables.dispose();
+        //sleep 5 seconds to prove there are no more emissions
+        sleep(5000);
+
+        //Handling Disposal with Observable.create()
+        //may be used when Observable.create() is returning a long-running or infinite Observable
+        //we should check isDisposed() from ObservableEmitter to prevent work when subsctiption is no longer active
+
+
+        Observable<Integer> origin =
+                Observable.create(observableEmitter -> {
+                    try {
+                        for (int i = 0; i < 1000; i++) {
+                            while (!observableEmitter.isDisposed()) {
+                                observableEmitter.onNext(i);
+                            }
+                            if (observableEmitter.isDisposed())
+                                return;
+                        }
+                        observableEmitter.onComplete();
+                    } catch (Throwable e) {
+                        observableEmitter.onError(e);
+                    }
+                });
+        //TODO: get back on this topic more deeply later!
 
     }
 
