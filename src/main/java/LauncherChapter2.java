@@ -1,5 +1,4 @@
-import io.reactivex.Observable;
-import io.reactivex.Observer;
+import io.reactivex.*;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
@@ -262,11 +261,82 @@ public class LauncherChapter2 {
         source2.subscribe(i -> System.out.println("Observer - 2: " + i));
 
         //Observable.fromCallable() helps emmiting errors and other info up in the Observable chain
+        //Treating errors this way does not crash your app!
+
+        Observable.fromCallable(() -> 1 / 0)
+                .subscribe(i -> System.out.println("RECEIVED: " + i),
+                        e -> System.out.println("Error Captured: " + e));
+
+        // Single, Completable and Maybe
+        //Single is an Observable that only emits a single item
+        //it has a SingleObserver interface
+        //onSuccess() consolidates onNext ans onComplete
+        //Subscribing to it allows us to provide the lambdas for onSuccess and an optional onError.
+
+        Single.just("Hello")
+                .map(String::length)
+                .subscribe(System.out::println,
+                        Throwable::printStackTrace);//toObservable() allow us to turn a Single into an Observable if we need it.
+
+        // Maybe just like Single, but it allous no emission to occur
+        //MaybeObserver has onSuccess() instead of onNext()
+        //Maybe will emit 0 or 1 emissions
+
+        // has emission
+        Maybe<Integer> presentSource = Maybe.just(100);
+        presentSource.subscribe(s -> System.out.println("Process 1 received: " + s),
+        Throwable::printStackTrace,
+                () -> System.out.println("Process 1 done!"));
+        //no emission
+        Maybe<Integer> emptySource = Maybe.empty();
+        emptySource.subscribe(s -> System.out.println("Process 2 received: " + s),
+        Throwable::printStackTrace,
+                () -> System.out.println("Process 2 done!"));
+
+        //Observable.firstElement() yelds a Maybe too
+
+        Observable<String> string =
+                Observable.just("Alpha","Beta","Gamma","Delta","Epsilon");
+        string.firstElement().subscribe(
+                s -> System.out.println("RECEIVED " + s),
+                Throwable::printStackTrace,
+                () -> System.out.println("Done!"));
+
+
+        //Completable almost never used. Only has onError and onComplete
+        //Does not receive any emissions
+
+
+        Completable.fromRunnable(LauncherChapter2::runProcess)
+                .subscribe(() -> System.out.println("Done!"));
+
+
+
+        //------ Disposing ------
+        //All finite Observables dipose of the resources used when hitting onComplete
+        //But we cannot trust fully when using long finite tasks or infinite ones in the garbage collector
+        // so we use dispose() to prevent memory leaks
+        // Also used to stop tasks when needed
+        // the Disposable interface links Observable and Observer
+
+        Observable<Long> newSeconds =
+                Observable.interval(1, TimeUnit.SECONDS);
+        Disposable disposable =
+                newSeconds.subscribe(l -> System.out.println("Received: " + l));
+        //sleep 5 seconds
+        sleep(5000);
+        //dispose and stop emissions
+        disposable.dispose();
+        //sleep 5 seconds to prove there are no more emissions
+        sleep(5000);
+        
 
 
     }
 
-
+    private static void runProcess() {
+        //run process here
+    }
 
     private static void sleep(long millis){
         try {
