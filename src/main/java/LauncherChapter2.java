@@ -78,8 +78,8 @@ public class LauncherChapter2 {
                 .subscribe(s -> System.out.println("RECEIVED " + s));
 
 
-        //Instread of Observable.create(), we can use Observable.just() to pass all items when using Observables
-        //we call onCOmplete() when all of them have been pushed
+        //Instead of Observable.create(), we can use Observable.just() to pass all items when using Observables
+        //we call onComplete() when all of them have been pushed
 
         Observable<String> reSource = Observable.just("Alpha", "Beta", "Gamma",
                 "Delta", "Epsilon");
@@ -203,9 +203,9 @@ public class LauncherChapter2 {
         //we need to delay the end of the execution to see the results in main thread
         //it is a cold observable as we can see by adding a second observer to it
         Observable<Long> seconds = Observable.interval(1, TimeUnit.SECONDS);
-        seconds.subscribe(s -> System.out.println("Observer 1: " + s));
+        seconds.subscribe(s -> System.out.println("Observer 01: " + s));
         sleep(6000);
-        seconds.subscribe(s -> System.out.println("Observer 2: " + s));
+        seconds.subscribe(s -> System.out.println("Observer 02: " + s));
         sleep(6000);
 
         //we can use ConnectableObservable to put them working over the same emissions:
@@ -250,10 +250,10 @@ public class LauncherChapter2 {
                         Throwable::printStackTrace,
                         () -> System.out.println("Done!"));*/
 
-        //Observable.defer() used as a factory, it is capalble to create a separate state for each Observer
+
+        //Observable.defer() used as a factory, it is capable to create a separate state for each Observer
         //often used when the Observable source is not capturing changes to the things driving it
-
-
+        //allows using each value emitted
         Observable<Integer> source2 =
                 Observable.defer(() -> Observable.range(start, count));
         source2.subscribe(i -> System.out.println("Observer - 1: " + i));
@@ -281,7 +281,7 @@ public class LauncherChapter2 {
                 .subscribe(System.out::println,
                         Throwable::printStackTrace);//toObservable() allow us to turn a Single into an Observable if we need it.
 
-        // Maybe just like Single, but it allous no emission to occur
+        // Maybe just like Single, but it allows no emission to occur
         //MaybeObserver has onSuccess() instead of onNext()
         //Maybe will emit 0 or 1 emissions
 
@@ -296,7 +296,7 @@ public class LauncherChapter2 {
                 Throwable::printStackTrace,
                 () -> System.out.println("Process 2 done!"));
 
-        //Observable.firstElement() yelds a Maybe too
+        //.firstElement() yields a Maybe too
 
         Observable<String> string =
                 Observable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon");
@@ -315,7 +315,7 @@ public class LauncherChapter2 {
 
 
         //------ Disposing ------
-        //All finite Observables dipose of the resources used when hitting onComplete
+        //All finite Observables dispose of the resources used when hitting onComplete
         //But we cannot trust fully when using long finite tasks or infinite ones in the garbage collector
         // so we use dispose() to prevent memory leaks
         // Also used to stop tasks when needed

@@ -19,7 +19,8 @@ public class Launcher {
 
         //
         Observable<Long> secondIntervals =
-                Observable.interval(1, TimeUnit.SECONDS);//pushes consecutive Long at specified time interval. It is not only data but also an event!
+                Observable.interval(1, TimeUnit.SECONDS);//pushes consecutive Long at specified time interval.
+                                                                // It is not only data but also an event!
         secondIntervals.subscribe(System.out::println);
         sleep(5000); //holds Main Thread for 5s so observable has a chance to fire.
     }
