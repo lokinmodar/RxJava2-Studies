@@ -1,0 +1,15 @@
+version: 2
+updates:
+- package-ecosystem: gradle
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "08:00"
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: junit:junit
+    versions:
+    - 4.13.1
+  - dependency-name: io.reactivex.rxjava2:rxjava
+    versions:
+    - 2.2.20
